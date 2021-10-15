@@ -1,0 +1,65 @@
+version: "3.7"
+services:
+
+########## Container Management ##########
+
+## Portainer - WebUI for Containers
+  portainer:
+    container_name: portainer
+    image: portainer/portainer:latest
+    restart: always
+    command: -H tcp://socket-proxy:2375
+    networks:
+      - traefik_proxy
+      - socket_proxy
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock:ro # Connect to docker socket proxy tcp://docker-socket-proxy:2375
+      - $DOCKERDIR/configs/portainer:/data # Change to local directory if you want to save/transfer config locally
+    environment:
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.portainer-rtr.entrypoints=https"
+      - "traefik.http.routers.portainer-rtr.rule=Host(`portainer.$DOMAINNAME`)"
+      - "traefik.http.routers.portainer-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.portainer-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.portainer-rtr.service=portainer-svc"
+      - "traefik.http.services.portainer-svc.loadbalancer.server.port=9000"
+
+## Heimdall - Homepage
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall:latest
+    restart: always
+    networks:
+      - traefik_proxy
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/heimdall:/config
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.heimdall-rtr.entrypoints=https"
+      - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
+      - "traefik.http.routers.heimdall-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.heimdall-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
+      - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
+
+networks:
+  traefik_proxy:
+    external: true
+  socket_proxy:
+    external: true

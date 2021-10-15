@@ -1,0 +1,141 @@
+version: "3.7"
+services:
+
+########## Media and Media Requests ##########
+
+## Requestrr - Make Overseerr requests using Discord
+  requestrr:
+    container_name: requestrr
+    image: linuxserver/requestrr:latest
+    restart: always
+    networks:
+      - traefik_proxy
+    ports:
+      - "4545:4545"
+    # security_opt:
+    #   - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/requestrr:/root/config
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.requestrr-rtr.entrypoints=https"
+      - "traefik.http.routers.requestrr-rtr.rule=Host(`requestrr.$DOMAINNAME`)"
+      - "traefik.http.routers.requestrr-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.requestrr-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.requestrr-rtr.service=requestrr-svc"
+      - "traefik.http.services.requestrr-svc.loadbalancer.server.port=4545"
+
+## Overseerr
+  overseerr:
+    image: hotio/overseerr:nightly
+    container_name: overseerr
+    networks:
+      - traefik_proxy
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - UMASK=002
+      - TZ=$TZ
+    volumes:
+      - $DOCKERDIR/configs/overseerr:/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+    labels: 
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.overseerr-rtr.entrypoints=https"
+      - "traefik.http.routers.overseerr-rtr.rule=Host(`overseerr.$DOMAINNAME`)"
+      - "traefik.http.routers.overseerr-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.overseerr-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.overseerr-rtr.service=overseerr-svc"
+      - "traefik.http.services.overseerr-svc.loadbalancer.server.port=5055"
+
+## Plex Media Server
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker:latest
+    restart: always
+    devices:
+      - /dev/dri:/dev/dri
+    privileged: true
+    networks:
+      traefik_proxy:
+        ipv4_address: 192.168.50.200 # Set a static IP for tautulli to connect to
+    ports:
+      - "32400:32400/tcp"
+      - "3005:3005/tcp"
+      - "8324:8324/tcp"
+      - "32469:32469/tcp"
+      # - "1900:1900/udp"
+      - "32410:32410/udp"
+      - "32412:32412/udp"
+      - "32413:32413/udp"
+      - "32414:32414/udp"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/plex:/config
+      - $MEDIADIR/movies:/MOVIES:ro
+      - $MEDIADIR/tv:/TV:ro
+      - $MEDIADIR/music:/MUSIC:ro
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+      - VERSION=docker
+      - ADVERTISE_IP=$PLEX_SERVER_IP
+      - ALLOWED_NETWORKS=192.168.1.0/24,172.16.0.0/16
+      # - PLEX_CLAIM=
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.plex-rtr.entrypoints=https"
+      - "traefik.http.routers.plex-rtr.rule=Host(`plex.$DOMAINNAME`)"
+      - "traefik.http.routers.plex-rtr.priority=10"
+      ## Middlewares
+      - "traefik.http.routers.plex-rtr.middlewares=plex-headers"
+      - "traefik.http.middlewares.plex-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.plex-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
+      - "traefik.http.middlewares.plex-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.plex-headers.headers.addvaryheader=true"
+#      - "traefik.http.middlewares.plex-headers.headers.allowedhosts=plex.$DOMAINNAME"
+      - "traefik.http.middlewares.plex-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.plex-headers.headers.sslredirect=true"
+#      - "traefik.http.middlewares.plex-headers.headers.sslhost=plex.$DOMAINNAME"
+#      - "traefik.http.middlewares.plex-headers.headers.sslforcehost=true"
+#      - "traefik.http.middlewares.plex-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.plex-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.plex-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.plex-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.plex-headers.headers.forcestsheader=true"
+#      - "traefik.http.middlewares.plex-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.plex-headers.headers.customframeoptionsvalue=allow-from https:$DOMAINNAME" # This option overrides FrameDeny
+      - "traefik.http.middlewares.plex-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.plex-headers.headers.browserxssfilter=true"
+#      - "traefik.http.middlewares.plex-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.plex-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.plex-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.plex-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+      ## HTTP Services
+      - "traefik.http.routers.plex-rtr.service=plex-svc"
+      - "traefik.http.services.plex-svc.loadbalancer.server.port=32400"
+      ## Forward Auth for Web
+      - "traefik.http.routers.plexWeb-rtr.entrypoints=https"
+      - "traefik.http.routers.plexWeb-rtr.rule=(Host(`plex.$DOMAINNAME`) && PathPrefix(`/web/`))"
+      - "traefik.http.routers.plexWeb-rtr.priority=20"
+      - "traefik.http.routers.plexWeb-rtr.middlewares=chain-oauth@file"
+      - "traefik.http.routers.plexWeb-rtr.service=plex-svc"
+
+networks:
+  traefik_proxy:
+    external: true
+  socket_proxy:
+    external: true

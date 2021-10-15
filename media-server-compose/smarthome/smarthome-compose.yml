@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+
+## Home Assistant - Home Automation Hub
+  ## Check config with:
+  # docker exec -it hass hass --script check_config -c /config
+  hass:
+    container_name: hass
+    image: homeassistant/home-assistant:latest
+    restart: always
+    #    privileged: true
+    networks:
+      - traefik_proxy
+      # - mqtt
+    ports:
+      - "8123:8123"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/hass:/config
+    environment:
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.hass-rtr.entrypoints=https"
+      - "traefik.http.routers.hass-rtr.rule=Host(`hass.$DOMAINNAME`)"
+      - "traefik.http.routers.hass-rtr.priority=10"
+      ## Middlewares
+      - "traefik.http.routers.hass-rtr.middlewares=secure-headers@file"
+      ## HTTP Services
+      - "traefik.http.routers.hass-rtr.service=hass-svc"
+      - "traefik.http.services.hass-svc.loadbalancer.server.port=8123"
+      ## API Forward Auth Bypass
+      - "traefik.http.routers.hass-bypass.entrypoints=https"
+      - "traefik.http.routers.hass-bypass.rule=(Host(`hass.$DOMAINNAME`) && PathPrefix(`/api/`))"
+      - "traefik.http.routers.hass-bypass.priority=20"
+      - "traefik.http.routers.hass-bypass.middlewares=secure-headers@file"
+      - "traefik.http.routers.hass-bypass.service=hass-svc"
+
+networks:
+  traefik_proxy:
+    external: true
+  socket_proxy:
+    external: true

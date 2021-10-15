@@ -1,0 +1,38 @@
+version: "3.7"
+services:
+
+########## Indexers ##########
+
+## Prowlarr - Indexer for usenet and torrents
+  prowlarr:
+    container_name: prowlarr
+    image: hotio/prowlarr:nightly
+    networks:
+      - traefik_proxy
+    restart: always
+    ports:
+      - "$PROWLARR_PORT:9696"
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+      - UMASK=002
+    volumes:
+      - $DOCKERDIR/configs/prowlarr:/config
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.prowlarr-rtr.entrypoints=https"
+      - "traefik.http.routers.prowlarr-rtr.rule=Host(`prowlarr.$DOMAINNAME`)"
+      - "traefik.http.routers.prowlarr-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.prowlarr-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.prowlarr-rtr.service=prowlarr-svc"
+      - "traefik.http.services.prowlarr-svc.loadbalancer.server.port=9696"
+
+networks:
+  traefik_proxy:
+    external: true
+  socket_proxy:
+    external: true
