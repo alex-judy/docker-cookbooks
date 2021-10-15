@@ -79,7 +79,7 @@ services:
 ## Traefik - Reverse Proxy
   traefik:
     container_name: traefik
-    image: traefik:picodon # the picodon tag refers to v2.3.x
+    image: traefik:latest # the picodon tag refers to v2.3.x
     restart: always
     command: # CLI arguments
       - --global.checkNewVersion=true
@@ -120,7 +120,7 @@ services:
       - --certificatesResolvers.cloudflare.acme.storage=/acme.json
       - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
       - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=$DNS_RESOLVER # pihole IP
-      - --pilot.token=cd7f685d-7923-4ea4-82ed-103b8cea6d2a
+      - --pilot.token=$TRAEFIK_PILOT_TOKEN
     networks:
       traefik_proxy:
         ipv4_address: 192.168.50.254
