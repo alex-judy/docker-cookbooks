@@ -53,7 +53,7 @@ services:
       - "traefik.http.routers.overseerr-rtr.rule=Host(`overseerr.$DOMAINNAME`)"
       - "traefik.http.routers.overseerr-rtr.tls=true"
       ## Middlewares
-      - "traefik.http.routers.overseerr-rtr.middlewares=chain-oauth@file"
+      - "traefik.http.routers.overseerr-rtr.middlewares=chain-noauth@file"
       ## HTTP Services
       - "traefik.http.routers.overseerr-rtr.service=overseerr-svc"
       - "traefik.http.services.overseerr-svc.loadbalancer.server.port=5055"
