@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.9"
 services:
 
 ########## Media and Media Requests ##########
@@ -108,7 +108,6 @@ services:
       - "traefik.http.middlewares.plex-headers.headers.addvaryheader=true"
 #      - "traefik.http.middlewares.plex-headers.headers.allowedhosts=plex.$DOMAINNAME"
       - "traefik.http.middlewares.plex-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.plex-headers.headers.sslredirect=true"
 #      - "traefik.http.middlewares.plex-headers.headers.sslhost=plex.$DOMAINNAME"
 #      - "traefik.http.middlewares.plex-headers.headers.sslforcehost=true"
 #      - "traefik.http.middlewares.plex-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -122,7 +121,6 @@ services:
       - "traefik.http.middlewares.plex-headers.headers.browserxssfilter=true"
 #      - "traefik.http.middlewares.plex-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
       - "traefik.http.middlewares.plex-headers.headers.referrerpolicy=same-origin"
-      - "traefik.http.middlewares.plex-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
       - "traefik.http.middlewares.plex-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
       ## HTTP Services
       - "traefik.http.routers.plex-rtr.service=plex-svc"
