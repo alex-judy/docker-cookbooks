@@ -5,6 +5,7 @@ services:
 
 ## Portainer - WebUI for Containers
   portainer:
+    user: $PUID
     container_name: portainer
     image: portainer/portainer:latest
     restart: always
@@ -12,6 +13,8 @@ services:
     networks:
       - traefik_proxy
       - socket_proxy
+    ports:
+      - "9000:9000"
     security_opt:
       - no-new-privileges:true
     volumes:

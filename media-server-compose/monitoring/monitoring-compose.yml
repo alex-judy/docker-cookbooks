@@ -96,6 +96,8 @@ services:
     networks:
       traefik_proxy:
         ipv4_address: 192.168.50.243
+    ports:
+      - "8181:8181"
     security_opt:
       - no-new-privileges:true
     volumes:
@@ -153,12 +155,13 @@ services:
 
 ## Grafana
   grafana:
-    user: "0"
+    user: $PUID
     container_name: grafana
     image: grafana/grafana:latest
     restart: always
     networks:
       - traefik_proxy
+      - influxdb
     ports:
       - "3000:3000"
     security_opt:
@@ -185,4 +188,6 @@ networks:
   traefik_proxy:
     external: true
   socket_proxy:
+    external: true
+  influxdb:
     external: true

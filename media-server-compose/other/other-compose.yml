@@ -112,7 +112,7 @@ services:
       - traefik_proxy
       - socket_proxy
     ports:
-      #      - "8384:8384" # Application WebUI
+      - "8384:8384" # Application WebUI
       - "22000:22000" # Listening port
       - "21027:21027/udp" # Protocol discovery
     security_opt:
