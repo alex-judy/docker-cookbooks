@@ -5,7 +5,7 @@ services:
 
 ## Portainer - WebUI for Containers
   portainer:
-    user: $PUID
+    # user: $PUID
     container_name: portainer
     image: portainer/portainer:latest
     restart: always

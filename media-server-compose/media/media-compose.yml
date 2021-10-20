@@ -32,7 +32,7 @@ services:
 
 ## Overseerr
   overseerr:
-    user: $PUID
+    # user: "$PUID"
     image: hotio/overseerr:nightly
     container_name: overseerr
     networks:
