@@ -1,5 +1,5 @@
 #!/bin/bash
-#Installs docker and docker-compose and copies configured files to user's home directory.
+#Installs docker and docker-compose v2 and copies configured files to user's home directory.
 
 DOCKER_DIR="$HOME/docker"
 
@@ -28,7 +28,7 @@ echo "Adding $USER to docker group..."
 sudo usermod -aG docker $USER
 
 chmod +x ~/.docker/cli-plugins/docker-compose
-docker-compose version
+docker compose version 
 
 echo "Starting docker service..."
 sudo service docker start
