@@ -34,11 +34,14 @@ echo "Starting docker service..."
 sudo service docker start
 
 echo "Copying .bash_aliases to $HOME..."
-sudo cp ../../.bash_aliases $HOME
+sudo cp ../.bash_aliases $HOME
 source ~/.bashrc
 
 echo "New docker folder created at $DOCKER_DIR..."
 mkdir $DOCKER_DIR
+
+echo "New bin folder created at $HOME/bin"
+mkdir $HOME/bin
 
 echo "Docker garbage collector setup..."
 mkdir -p $USERDIR/docker/configs/docker-gc
@@ -52,6 +55,9 @@ sudo chmod -R 775 $DOCKER_DIR
 
 echo "Copying files to $DOCKER_DIR..."
 cp compose-files/. $DOCKER_DIR/compose-files
+
+echo "Copying scripts to $HOME/bin"
+cp . $HOME/bin
 
 echo "Creating shared docker folder..."
 mkdir $DOCKER_DIR/shared

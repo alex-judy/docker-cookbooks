@@ -1,7 +1,7 @@
 [http.routers]
   [http.routers.pihole-rtr]
       entryPoints = ["https"]
-      rule = "Host(``)"
+      rule = "Host(`pihole.louhome.xyz`)"
       service = "pihole-svc"
       middlewares = ["chain-oauth", "pihole-add-admin"]
       [http.routers.pihole-rtr.tls]
@@ -16,4 +16,4 @@
     [http.services.pihole-svc.loadBalancer]
       passHostHeader = true
       [[http.services.pihole-svc.loadBalancer.servers]]
-        url = ":80" # or whatever your external host's IP:port is
+        url = "http://192.168.1.2:80" # or whatever your external host's IP:port is
