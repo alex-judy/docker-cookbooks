@@ -34,7 +34,8 @@ echo "Starting docker service..."
 sudo service docker start
 
 echo "Copying .bash_aliases to $HOME..."
-sudo cp ./.bash_aliases $HOME
+sudo cp ../../.bash_aliases $HOME
+source ~/.bashrc
 
 echo "New docker folder created at $DOCKER_DIR..."
 mkdir $DOCKER_DIR
@@ -50,7 +51,7 @@ sudo setfacl -Rdm g:docker:rwx $DOCKER_DIR
 sudo chmod -R 775 $DOCKER_DIR
 
 echo "Copying files to $DOCKER_DIR..."
-cp media-server-compose/. $DOCKER_DIR/compose-files
+cp compose-files/. $DOCKER_DIR/compose-files
 
 echo "Creating shared docker folder..."
 mkdir $DOCKER_DIR/shared
