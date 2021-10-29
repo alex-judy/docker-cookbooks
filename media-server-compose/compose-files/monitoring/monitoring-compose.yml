@@ -4,29 +4,29 @@ services:
 ########## Container Monitoring ##########
 
 ## UptimeKuma - Endpoint Monitoring
-  uptimekuma:
-    container_name: uptimekuma
-    image: louislam/uptime-kuma:latest
-    restart: always
-    networks:
-      - traefik_proxy
-      - socket_proxy
-    ports:
-      - "3002:3002"
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - $DOCKERDIR/configs/uptime-kuma/:/app/data
-    labels:
-      - "traefik.enable=true"
-      ## HTTP Routers
-      - "traefik.http.routers.uptime-kuma-rtr.entrypoints=https"
-      - "traefik.http.routers.uptime-kuma-rtr.rule=Host(`uptime.$DOMAINNAME`)"
-      ## Middlewares
-      - "traefik.http.routers.uptimekuma-rtr.middlewares=chain-oauth@file"
-      ## HTTP Services
-      - "traefik.http.routers.uptime-kuma-rtr.service=uptime-kuma-svc"
-      - "traefik.http.services.uptime-kuma-svc.loadbalancer.server.port=3001"
+  # uptimekuma:
+  #   container_name: uptimekuma
+  #   image: louislam/uptime-kuma:latest
+  #   restart: always
+  #   networks:
+  #     - traefik_proxy
+  #     - socket_proxy
+  #   ports:
+  #     - "3002:3002"
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   volumes:
+  #     - $DOCKERDIR/configs/uptime-kuma/:/app/data
+  #   labels:
+  #     - "traefik.enable=true"
+  #     ## HTTP Routers
+  #     - "traefik.http.routers.uptime-kuma-rtr.entrypoints=https"
+  #     - "traefik.http.routers.uptime-kuma-rtr.rule=Host(`uptime.$DOMAINNAME`)"
+  #     ## Middlewares
+  #     - "traefik.http.routers.uptimekuma-rtr.middlewares=chain-oauth@file"
+  #     ## HTTP Services
+  #     - "traefik.http.routers.uptime-kuma-rtr.service=uptime-kuma-svc"
+  #     - "traefik.http.services.uptime-kuma-svc.loadbalancer.server.port=3001"
 
 ## Dozzle - Real-time Docker Log Viewer
   dozzle:
@@ -96,6 +96,8 @@ services:
     networks:
       traefik_proxy:
         ipv4_address: 192.168.50.243
+    ports:
+      - "8181:8181"
     security_opt:
       - no-new-privileges:true
     volumes:
@@ -153,12 +155,13 @@ services:
 
 ## Grafana
   grafana:
-    user: "0"
+    user: $PUID
     container_name: grafana
     image: grafana/grafana:latest
     restart: always
     networks:
       - traefik_proxy
+      - influxdb
     ports:
       - "3000:3000"
     security_opt:
@@ -185,4 +188,6 @@ networks:
   traefik_proxy:
     external: true
   socket_proxy:
+    external: true
+  influxdb:
     external: true

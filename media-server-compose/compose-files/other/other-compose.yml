@@ -112,7 +112,7 @@ services:
       - traefik_proxy
       - socket_proxy
     ports:
-      #      - "8384:8384" # Application WebUI
+      - "8384:8384" # Application WebUI
       - "22000:22000" # Listening port
       - "21027:21027/udp" # Protocol discovery
     security_opt:
@@ -174,6 +174,37 @@ services:
       - "traefik.http.routers.hass-bypass.priority=20"
       - "traefik.http.routers.hass-bypass.middlewares=secure-headers@file"
       - "traefik.http.routers.hass-bypass.service=hass-svc"
+
+  filebrowser:
+    container_name: filebrowser
+    image: hurlenko/filebrowser:latest
+    restart: always
+    networks:
+      - traefik_proxy
+      - socket_proxy
+    ports:
+      - 8585:8080
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /media/alex/:/data
+      - $DOCKERDIR/configs/filebrowser/config:/config
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+      - FB_BASEURL=/
+      - VIRTUAL_HOST=$DOMAINNAME
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.filebrowser-rtr.entrypoints=https"
+      - "traefik.http.routers.filebrowser-rtr.rule=Host(`filebrowser.$DOMAINNAME`)"
+      ## Middlewares
+      - "traefik.http.routers.filebrowser-rtr.middlewares=chain-oauth@file"
+      ## HTTP Services
+      - "traefik.http.routers.filebrowser-rtr.service=filebrowser-svc"
+      - "traefik.http.services.filebrowser-svc.loadbalancer.server.port=8080"
 
 networks:
   traefik_proxy:

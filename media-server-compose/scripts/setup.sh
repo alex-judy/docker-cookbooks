@@ -1,5 +1,5 @@
 #!/bin/bash
-#Installs docker and docker-compose and copies configured files to user's home directory.
+#Installs docker and docker-compose v2 and copies configured files to user's home directory.
 
 DOCKER_DIR="$HOME/docker"
 
@@ -28,16 +28,20 @@ echo "Adding $USER to docker group..."
 sudo usermod -aG docker $USER
 
 chmod +x ~/.docker/cli-plugins/docker-compose
-docker-compose version
+docker compose version 
 
 echo "Starting docker service..."
 sudo service docker start
 
 echo "Copying .bash_aliases to $HOME..."
-sudo cp ./.bash_aliases $HOME
+sudo cp ../.bash_aliases $HOME
+source ~/.bashrc
 
 echo "New docker folder created at $DOCKER_DIR..."
 mkdir $DOCKER_DIR
+
+echo "New bin folder created at $HOME/bin"
+mkdir $HOME/bin
 
 echo "Docker garbage collector setup..."
 mkdir -p $USERDIR/docker/configs/docker-gc
@@ -50,7 +54,10 @@ sudo setfacl -Rdm g:docker:rwx $DOCKER_DIR
 sudo chmod -R 775 $DOCKER_DIR
 
 echo "Copying files to $DOCKER_DIR..."
-cp media-server-compose/. $DOCKER_DIR/compose-files
+cp compose-files/. $DOCKER_DIR/compose-files
+
+echo "Copying scripts to $HOME/bin"
+cp . $HOME/bin
 
 echo "Creating shared docker folder..."
 mkdir $DOCKER_DIR/shared

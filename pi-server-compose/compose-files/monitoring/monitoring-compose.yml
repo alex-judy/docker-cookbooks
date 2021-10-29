@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+
+########## Container Monitoring ##########
+
+## UptimeKuma - Endpoint Monitoring
+  uptimekuma:
+    container_name: uptimekuma
+    image: louislam/uptime-kuma:latest
+    restart: always
+    networks:
+      - socket_proxy
+    ports:
+      - "3001:3001"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/uptime-kuma/:/app/data
+
+## Dozzle - Real-time Docker Log Viewer
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: always
+    networks:
+      - socket_proxy
+    ports:
+      - "3002:8080"
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_TAILSIZE: 300
+      DOZZLE_FILTER: "status=running"
+      # DOZZLE_FILTER: "label=log_me" # limits logs displayed to containers with this label
+      DOCKER_HOST: tcp://socket-proxy:2375
+    # volumes:
+    #  - /var/run/docker.sock:/var/run/docker.sock # Use Docker Socket Proxy instead for improved security
+
+## Glances - Container and System Monitor
+  glances:
+    container_name: glances
+    image: nicolargo/glances:latest
+    pid: host
+    restart: always
+    networks:
+      - socket_proxy
+    ports:
+      - "61208-61209:61208-61209"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/glances:/glances/conf # Use this if you want to add a glances.conf file
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - GLANCES_OPT=-w
+      - DOCKER_HOST=tcp://socket-proxy:2375
+
+networks:
+  socket_proxy:
+    external: true

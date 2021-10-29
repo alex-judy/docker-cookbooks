@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+
+## Home Assistant - Home Automation Hub
+  ## Check config with:
+  # docker exec -it hass hass --script check_config -c /config
+  hass:
+    container_name: hass
+    image: homeassistant/home-assistant:latest
+    restart: always
+    privileged: true
+    networks:
+      - socket_proxy
+      # - mqtt
+    ports:
+      - "8123:8123"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/configs/hass:/config
+    environment:
+      - TZ=$TZ
+
+networks:
+  socket_proxy:
+    external: true
